@@ -1,4 +1,4 @@
-  Ballroom Event Reservation System
+#  Ballroom Event Reservation System
 
 This is a full-stack web application I built for managing event venue reservations. The goal of the project was to digitize the manual booking process, allowing clients to create an account, check available rooms, and book events such as weddings or corporate parties.
 
