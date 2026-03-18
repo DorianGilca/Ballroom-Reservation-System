@@ -1,15 +1,17 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['client_id'])) { header("Location: login.php"); exit(); }
+if (!isset($_SESSION['client_id'])) { 
+    header("Location: login.php"); 
+    exit(); 
+}
 
 $conn = new mysqli("localhost", "root", "", "ballroomdb");
-if ($conn->connect_error) { die("Eroare: " . $conn->connect_error); }
+if ($conn->connect_error) { 
+    die("Database connection failed: " . $conn->connect_error); 
+}
 
 $client_id = $_SESSION['client_id'];
-
-// FILTRU 
-
 $data_filtrare = "2000-01-01"; 
 $text_afisat = "Toata Perioada";
 
@@ -18,50 +20,48 @@ if (isset($_POST['aplica_filtru_data'])) {
     $text_afisat = "Dupa data: " . $data_filtrare;
 }
 
-//
-
-// 1. INSERT eveniment
 if (isset($_POST['adauga_rezervare'])) {
     $sala_id = $_POST['sala_id'];
     $meniu_id = $_POST['meniu_id'];
     $data = $_POST['data_eveniment'];
     $pers = $_POST['nr_persoane'];
     $tip = $_POST['tip_eveniment'];
+    
     $conn->query("INSERT INTO Eveniment (client_id, sala_id, meniu_id, tip_eveniment, data_eveniment, numar_persoane, status) 
                   VALUES ($client_id, $sala_id, $meniu_id, '$tip', '$data', $pers, 'In Asteptare')");
-    header("Location: dashboard.php"); exit();
+    header("Location: dashboard.php"); 
+    exit();
 }
 
-// 2. DELETE rezervare
 if (isset($_POST['sterge_rezervare'])) {
     $id_de_sters = $_POST['id_eveniment'];
     $conn->query("DELETE FROM Plata WHERE eveniment_id = $id_de_sters");
     $conn->query("DELETE FROM Eveniment WHERE eveniment_id = $id_de_sters");
-    header("Location: dashboard.php"); exit();
+    header("Location: dashboard.php"); 
+    exit();
 }
 
-// 3. UPDATE eveniment
 if (isset($_POST['actualizeaza_nr'])) {
     $id_ev = $_POST['id_eveniment_update'];
     $nr_nou = $_POST['nr_persoane_nou'];
     $conn->query("UPDATE Eveniment SET numar_persoane = $nr_nou WHERE eveniment_id = $id_ev");
-    header("Location: dashboard.php"); exit();
+    header("Location: dashboard.php"); 
+    exit();
 }
 
-// 4. UPDATE profil
 if (isset($_POST['actualizeaza_profil'])) {
     $tel_nou = $_POST['telefon_nou'];
     $conn->query("UPDATE Client SET telefon = '$tel_nou' WHERE client_id = $client_id");
-    echo "<script>alert('Telefon actualizat!'); window.location.href='dashboard.php';</script>";
+    echo "<script>alert('Date actualizate!'); window.location.href='dashboard.php';</script>";
 }
 
-// 5. DELETE TOTAL
 if (isset($_POST['sterge_cont_client'])) {
     $conn->query("DELETE FROM Plata WHERE eveniment_id IN (SELECT eveniment_id FROM Eveniment WHERE client_id = $client_id)");
     $conn->query("DELETE FROM Eveniment WHERE client_id = $client_id");
     $conn->query("DELETE FROM Client WHERE client_id = $client_id");
     session_destroy();
-    header("Location: login.php"); exit();
+    header("Location: login.php"); 
+    exit();
 }
 ?>
 
@@ -138,7 +138,6 @@ if (isset($_POST['sterge_cont_client'])) {
         .btn-action { padding: 8px 15px; font-size: 12px; width: auto; }
         .save { background: #27ae60; } .delete { background: #e74c3c; }
         
-        
         .filter-container {
             background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px;
             margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
@@ -172,11 +171,10 @@ if (isset($_POST['sterge_cont_client'])) {
             
             <div class="stat-card blue">
                 <?php
-                //SUm
                 $sql1 = "SELECT SUM(E.numar_persoane * M.pret_persoana) as val 
                          FROM Eveniment E 
                          JOIN Meniu M ON E.meniu_id = M.meniu_id 
-                         WHERE E.client_id = $client_id AND E.data_eveniment >= '$data_filtrare'"; //
+                         WHERE E.client_id = $client_id AND E.data_eveniment >= '$data_filtrare'"; 
                 
                 $r1 = $conn->query($sql1)->fetch_assoc();
                 echo "<h3>" . number_format($r1['val'] ?? 0) . " <span style='font-size:16px'>RON</span></h3>";
@@ -186,10 +184,9 @@ if (isset($_POST['sterge_cont_client'])) {
             
             <div class="stat-card gold">
                 <?php
-                // MAX
                 $sql2 = "SELECT MAX(numar_persoane) as m 
                          FROM Eveniment 
-                         WHERE client_id = $client_id AND data_eveniment >= '$data_filtrare'"; //
+                         WHERE client_id = $client_id AND data_eveniment >= '$data_filtrare'"; 
                          
                 $r2 = $conn->query($sql2)->fetch_assoc();
                 echo "<h3>" . ($r2['m'] ?? 0) . "</h3>";
@@ -199,10 +196,9 @@ if (isset($_POST['sterge_cont_client'])) {
             
             <div class="stat-card green">
                 <?php
-                // AVG
                 $sql3 = "SELECT AVG(numar_persoane) as a 
                          FROM Eveniment 
-                         WHERE client_id = $client_id AND data_eveniment >= '$data_filtrare'"; //
+                         WHERE client_id = $client_id AND data_eveniment >= '$data_filtrare'"; 
                          
                 $r3 = $conn->query($sql3)->fetch_assoc();
                 echo "<h3>" . round($r3['a'] ?? 0) . "</h3>";
@@ -212,7 +208,6 @@ if (isset($_POST['sterge_cont_client'])) {
             
             <div class="stat-card purple">
                 <?php
-                // 4. MODIFICAT: Numara doar evenimentele cu > 200 persoane (folosind subcerere pentru cerinta)
                 $sql4 = "SELECT COUNT(*) as nr 
                          FROM Eveniment 
                          WHERE client_id=$client_id 
