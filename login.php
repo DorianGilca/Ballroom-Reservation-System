@@ -2,26 +2,24 @@
 session_start();
 $conn = new mysqli("localhost", "root", "", "ballroomdb");
 
-if ($conn->connect_error) { die("Eroare conexiune: " . $conn->connect_error); }
+if ($conn->connect_error) { 
+    die("Eroare conexiune: " . $conn->connect_error); 
+}
 
 $mesaj = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Preluam datele din formular
     $nume = $_POST['nume'];
     $prenume = $_POST['prenume'];
     $telefon = $_POST['telefon'];
     $email = $_POST['email'];
     $adresa = $_POST['adresa'];
-    $parola = $_POST['parola']; // O folosim doar ca verificare simpla sau o salvam
+    $parola = $_POST['parola']; 
 
-    // Verificam daca acest email exista deja in baza de date
     $check = $conn->query("SELECT * FROM Client WHERE email = '$email'");
     
     if ($check->num_rows > 0) {
-        // Daca exista, luam ID-ul lui si il logam
         $row = $check->fetch_assoc();
-        // Verificam parola (optional, daca vrei securitate)
         if ($row['parola'] == $parola) {
             $_SESSION['client_id'] = $row['client_id'];
             $_SESSION['nume_client'] = $row['nume'] . " " . $row['prenume'];
@@ -31,12 +29,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mesaj = "Ai deja cont, dar parola este greșită!";
         }
     } else {
-        // Daca NU exista, facem INSERT AUTOMAT (Aici bifezi cerinta INSERT Client)
         $sql = "INSERT INTO Client (nume, prenume, telefon, email, adresa, parola) 
                 VALUES ('$nume', '$prenume', '$telefon', '$email', '$adresa', '$parola')";
         
         if ($conn->query($sql) === TRUE) {
-            // Luam ID-ul noului client creat
             $_SESSION['client_id'] = $conn->insert_id;
             $_SESSION['nume_client'] = $nume . " " . $prenume;
             header("Location: dashboard.php");
