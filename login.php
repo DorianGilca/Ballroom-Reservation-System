@@ -2,20 +2,20 @@
 session_start();
 $conn = new mysqli("localhost", "root", "", "ballroomdb");
 
-if ($conn->connect_error) { 
-    die("Eroare conexiune: " . $conn->connect_error); 
-}
+if ($conn->connect_error) { die("Eroare conexiune: " . $conn->connect_error); }
 
 $mesaj = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Preluam datele din formular
     $nume = $_POST['nume'];
     $prenume = $_POST['prenume'];
     $telefon = $_POST['telefon'];
     $email = $_POST['email'];
     $adresa = $_POST['adresa'];
-    $parola = $_POST['parola']; 
+    $parola = $_POST['parola']; // O folosim doar ca verificare simpla sau o salvam
 
+    // Verificam daca acest email exista deja in baza de date
     $check = $conn->query("SELECT * FROM Client WHERE email = '$email'");
     
     if ($check->num_rows > 0) {
@@ -33,6 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 VALUES ('$nume', '$prenume', '$telefon', '$email', '$adresa', '$parola')";
         
         if ($conn->query($sql) === TRUE) {
+            // Luam ID ul noului client creat
             $_SESSION['client_id'] = $conn->insert_id;
             $_SESSION['nume_client'] = $nume . " " . $prenume;
             header("Location: dashboard.php");
